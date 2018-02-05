@@ -2,6 +2,7 @@ import requests
 
 ignore_url_ends = ['.pdf', 'mp3', 'gif', 'jpg', 'jpeg', 'png', 'zip', 'wav', 'ppm']
 base_url = input('Enter URL to begin scraping at: ')
+recurse = input('Should I follow pages linked from this page (y/n) ? ')
 word_counts = {}
 
 ###
@@ -75,7 +76,7 @@ def scrape_url_tree_helper(scrape_url, depth, process_function):
             if u.endswith(end):
                 ok = False
                 break
-        if ok:
+        if ok and recurse == 'y':
             scrape_url_tree_helper(u, depth+1, process_function)
 
 ###
