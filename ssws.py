@@ -1,3 +1,9 @@
+###
+### SSWS stands for "Super Simple Web Scraper".
+### This is a simple, single-file implementation of a web scraper.
+### Presently, it just gathers word-counts for web-pages (or web-page trees)
+###
+
 import requests
 
 ignore_url_ends = ['.pdf', 'mp3', 'gif', 'jpg', 'jpeg', 'png', 'zip', 'wav', 'ppm']
@@ -13,26 +19,26 @@ def get_url_links_from_page(html_page_text, url):
     hrefs = []
     lines = html_page_text.split('\n')
     # Find all of the <a> links, get the href's
-    for l in lines:
-        if '<a' in l:
-            i1 = l.index('<a')
-            while i1 < len(l):
-                if l[i1:].startswith('href="'):
+    for line in lines:
+        if '<a' in line:
+            i1 = line.index('<a')
+            while i1 < len(line):
+                if line[i1:].startswith('href="'):
                     i2 = i1 + 6
                     i3 = i1 + 6
-                    while l[i3] != '"' and i3 < len(l):
+                    while line[i3] != '"' and i3 < len(line):
                         i3 += 1
-                    hrefs.append(l[i2:i3])
+                    hrefs.append(line[i2:i3])
                 i1+=1
     if url.endswith('index.html'):
         url = url[:-10]
     urls = []
     # Convert the hrefs to valid URLs
-    for p in hrefs:
-        if p.startswith('./'):
-            urls.append(url + '/' + p[2:])
-        elif p.startswith('/'):
-            urls.append(base_url + p)
+    for path in hrefs:
+        if path.startswith('./'):
+            urls.append(url + '/' + path[2:])
+        elif path.startswith('/'):
+            urls.append(base_url + path)
     # Return a list of valid URLs to caller
     return urls
 
@@ -42,11 +48,12 @@ def get_url_links_from_page(html_page_text, url):
 ### Gathers word counts for the entire scrape.
 ###
 def do_word_count(page_data):
-    sp = page_data.split(' ')
-    for s in sp:
-        if s not in word_counts:
-            word_counts[s] = 0
-        word_counts[s]+=1
+    words = page_data.split(' ')
+    for word in words:
+        word = word.strip('\n')
+        if word not in word_counts:
+            word_counts[word] = 0
+        word_counts[word]+=1
 
 ###
 ### Called to summarize the findings of the scrape.
@@ -55,7 +62,7 @@ def summarize():
     sorted_word_counts = [(k, word_counts[k]) for k in sorted(word_counts, key=word_counts.get, reverse=True)]
     for k,v in sorted_word_counts:
         if (v > 10):
-            print(k + " -> " + str(v))
+            print(k.rjust(15) + " -> " + str(v))
 
 ###
 ### Recursive helper function for scrape_url_tree.
@@ -94,5 +101,8 @@ def main():
     summarize()
 
 ### :)
-main()
+try:
+    main()
+except:
+    print('SSWS experienced an issue. Please double-check your URL.')
 
